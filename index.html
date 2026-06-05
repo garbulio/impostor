@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Impostor</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #E8192C;
+    --dark-red: #C0001E;
+    --pink: #FF4D6D;
+    --dark: #1a1a2e;
+    --card: #16213e;
+    --card2: #0f3460;
+    --yellow: #FFD60A;
+    --white: #FFFFFF;
+    --green: #2DC653;
+    --grid-color: rgba(255,255,255,0.07);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--red);
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* GRID BACKGROUND */
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.18) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+  }
+
+  /* SCREENS */
+  .screen {
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 24px 20px;
+    overflow-y: auto;
+    transition: opacity 0.35s, transform 0.35s;
+  }
+  .screen::after {
+    content: '';
+    position: absolute; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(0,0,0,0.13) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.13) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+  }
+  .screen > * { position: relative; z-index: 1; }
+  .screen.hidden { opacity: 0; pointer-events: none; transform: translateY(30px); }
+  .screen.slide-left { transform: translateX(-100%); opacity: 0; }
+
+  /* =================== TELA 1 - TÍTULO =================== */
+  #screen-title { background: var(--red); justify-content: space-between; padding: 60px 28px 48px; }
+
+  .title-logo {
+    text-align: center;
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .title-logo h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 96px;
+    color: white;
+    line-height: 1;
+    text-shadow: 6px 6px 0px rgba(0,0,0,0.3);
+    letter-spacing: 4px;
+  }
+  .title-logo .tagline {
+    font-size: 16px; font-weight: 700;
+    color: rgba(255,255,255,0.8);
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-top: 8px;
+  }
+  .title-logo .emoji-row { font-size: 48px; margin-bottom: 16px; }
+
+  .btn-primary {
+    width: 100%; padding: 20px;
+    background: white; color: var(--red);
+    border: none; border-radius: 50px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 20px; font-weight: 900;
+    cursor: pointer; letter-spacing: 1px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transition: transform 0.15s, box-shadow 0.15s;
+    text-transform: uppercase;
+  }
+  .btn-primary:active { transform: scale(0.97); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+  /* =================== TELA 2 - JOGADORES =================== */
+  #screen-players { background: var(--red); justify-content: flex-start; padding-top: 60px; }
+
+  .screen-header {
+    width: 100%; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 28px; position: relative;
+  }
+  .screen-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px; color: white; letter-spacing: 2px;
+  }
+  .btn-back {
+    position: absolute; left: 0;
+    background: rgba(255,255,255,0.2); border: none;
+    color: white; width: 40px; height: 40px;
+    border-radius: 50%; font-size: 20px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+
+  .players-list { width: 100%; display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+
+  .player-input-row {
+    display: flex; align-items: center; gap: 12px;
+    background: #1a1a2e; border-radius: 50px;
+    padding: 14px 16px; width: 100%;
+  }
+  .player-num {
+    background: var(--yellow); color: #1a1a2e;
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 16px; flex-shrink: 0;
+  }
+  .player-input-row input {
+    flex: 1; background: transparent; border: none;
+    color: white; font-family: 'Nunito', sans-serif;
+    font-size: 16px; font-weight: 700; outline: none;
+  }
+  .player-input-row input::placeholder { color: rgba(255,255,255,0.3); }
+  .btn-remove {
+    background: rgba(255,255,255,0.15); border: none;
+    color: white; width: 28px; height: 28px;
+    border-radius: 50%; font-size: 14px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+
+  .btn-add {
+    width: 100%; padding: 18px;
+    background: rgba(255,255,255,0.15);
+    border: 2px dashed rgba(255,255,255,0.4);
+    border-radius: 50px; color: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px; font-weight: 800;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 8px;
+    margin-bottom: 16px;
+    transition: background 0.2s;
+  }
+  .btn-add:active { background: rgba(255,255,255,0.25); }
+
+  .min-players-msg { color: rgba(255,255,255,0.6); font-size: 14px; font-weight: 700; margin-top: 8px; }
+
+  /* =================== TELA 3 - CATEGORIAS =================== */
+  #screen-categories { background: var(--red); justify-content: flex-start; padding-top: 60px; }
+
+  .categories-list { width: 100%; display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+
+  .category-card {
+    background: #1a1a2e; border-radius: 20px;
+    padding: 18px 20px; display: flex;
+    align-items: center; gap: 16px;
+    cursor: pointer; border: 3px solid transparent;
+    transition: border-color 0.2s, transform 0.15s;
+    position: relative;
+  }
+  .category-card.selected { border-color: var(--yellow); }
+  .category-card:active { transform: scale(0.98); }
+  .category-emoji { font-size: 36px; flex-shrink: 0; }
+  .category-info { flex: 1; }
+  .category-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px; color: white; letter-spacing: 1px;
+  }
+  .category-count { font-size: 13px; color: rgba(255,255,255,0.5); font-weight: 700; }
+  .category-check {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.2s;
+  }
+  .category-card.selected .category-check {
+    background: var(--yellow); border-color: var(--yellow); color: #1a1a2e;
+    font-weight: 900;
+  }
+
+  /* =================== TELA 4 - TEMPO =================== */
+  #screen-time { background: var(--red); }
+
+  .time-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 120px; color: white;
+    line-height: 1; text-align: center;
+    text-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+  }
+  .time-label { color: rgba(255,255,255,0.7); font-size: 18px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 40px; }
+  .time-controls { display: flex; gap: 24px; align-items: center; margin-bottom: 50px; }
+  .btn-time {
+    background: rgba(255,255,255,0.2); border: none;
+    color: white; width: 64px; height: 64px;
+    border-radius: 50%; font-size: 32px;
+    cursor: pointer; font-weight: 900;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-time:active { transform: scale(0.93); background: rgba(255,255,255,0.35); }
+
+  /* =================== TELAS DE REVELAÇÃO =================== */
+  #screen-reveal { background: var(--dark); justify-content: space-between; padding: 60px 24px 48px; }
+
+  .reveal-header { text-align: center; width: 100%; }
+  .reveal-round { color: rgba(255,255,255,0.4); font-size: 14px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+  .reveal-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px; color: white; line-height: 1;
+  }
+  .reveal-instruction { color: rgba(255,255,255,0.5); font-size: 15px; font-weight: 700; margin-top: 8px; }
+
+  .reveal-card-area {
+    width: 100%; flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; cursor: pointer;
+  }
+
+  .reveal-card {
+    width: 100%; max-width: 320px;
+    background: #16213e;
+    border-radius: 24px; padding: 48px 32px;
+    text-align: center; position: relative;
+    overflow: hidden; user-select: none;
+    border: 2px solid rgba(255,255,255,0.08);
+  }
+
+  .reveal-card .hidden-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, #1a1a2e, #0f3460);
+    border-radius: 24px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 12px; z-index: 100;
+  }
+  .reveal-card .hidden-overlay.gone { display: none !important; }
+  .hidden-overlay .lock-icon { font-size: 52px; }
+  .hidden-overlay .swipe-hint { color: rgba(255,255,255,0.5); font-size: 14px; font-weight: 700; }
+  .hidden-overlay .swipe-arrow { font-size: 28px; animation: bounce-up 1.2s infinite; }
+  @keyframes bounce-up { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  @keyframes dot-appear { 0%{opacity:0;transform:scale(0.3)} 60%{transform:scale(1.3)} 100%{opacity:1;transform:scale(1)} }
+
+  .reveal-word-content { position: relative; z-index: 1; }
+  .reveal-word-content .role-label { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  .reveal-word-content .the-word {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px; color: white; line-height: 1.1;
+  }
+  .reveal-word-content .the-word.impostor { color: var(--red); font-size: 64px; }
+  .reveal-word-content .word-category { color: rgba(255,255,255,0.4); font-size: 14px; font-weight: 700; margin-top: 8px; }
+
+  .reveal-footer { width: 100%; }
+  .next-player-info { text-align: center; color: rgba(255,255,255,0.4); font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .next-player-info span { color: white; }
+
+  .btn-next {
+    width: 100%; padding: 20px;
+    background: var(--red); color: white;
+    border: none; border-radius: 50px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 18px; font-weight: 900;
+    cursor: pointer; text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: opacity 0.3s, transform 0.15s;
+  }
+  .btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-next:not(:disabled):active { transform: scale(0.97); }
+
+  /* =================== TELA TIMER =================== */
+  #screen-timer { background: var(--dark); }
+
+  .timer-circle {
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: conic-gradient(var(--red) 0deg, rgba(255,255,255,0.08) 0deg);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 32px; position: relative;
+  }
+  .timer-inner {
+    width: 188px; height: 188px;
+    border-radius: 50%; background: var(--dark);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .timer-count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px; color: white; line-height: 1;
+  }
+  .timer-sec { color: rgba(255,255,255,0.4); font-size: 14px; font-weight: 700; letter-spacing: 2px; }
+  .timer-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: rgba(255,255,255,0.5); letter-spacing: 3px; margin-bottom: 8px; }
+  .timer-subtitle { color: rgba(255,255,255,0.3); font-size: 15px; font-weight: 700; margin-bottom: 48px; }
+
+  .btn-pause {
+    background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2);
+    color: white; padding: 14px 40px; border-radius: 50px;
+    font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 800;
+    cursor: pointer; letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 16px; transition: background 0.2s;
+  }
+
+  /* =================== TELA VOTAÇÃO =================== */
+  #screen-vote { background: var(--dark); justify-content: flex-start; padding-top: 60px; }
+
+  .vote-title { font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: white; letter-spacing: 2px; text-align: center; margin-bottom: 6px; }
+  .vote-subtitle { color: rgba(255,255,255,0.5); font-size: 15px; font-weight: 700; text-align: center; margin-bottom: 28px; }
+
+  .vote-list { width: 100%; display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+  .vote-card {
+    background: #16213e; border-radius: 20px;
+    padding: 18px 24px; display: flex;
+    align-items: center; justify-content: space-between;
+    cursor: pointer; border: 3px solid transparent;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .vote-card.selected { border-color: var(--red); background: rgba(232,25,44,0.15); }
+  .vote-card:active { transform: scale(0.98); }
+  .vote-player-name { font-size: 20px; font-weight: 800; color: white; }
+  .vote-radio {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .vote-card.selected .vote-radio { background: var(--red); border-color: var(--red); }
+  .vote-radio-dot { width: 10px; height: 10px; border-radius: 50%; background: white; display: none; }
+  .vote-card.selected .vote-radio-dot { display: block; }
+
+  .btn-reveal {
+    width: 100%; padding: 20px;
+    background: var(--red); color: white;
+    border: none; border-radius: 50px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 18px; font-weight: 900;
+    cursor: pointer; text-transform: uppercase;
+    letter-spacing: 1px; opacity: 0.4;
+    transition: opacity 0.3s, transform 0.15s;
+    pointer-events: none;
+  }
+  .btn-reveal.active { opacity: 1; pointer-events: all; }
+  .btn-reveal:active { transform: scale(0.97); }
+
+  /* =================== TELA VERDADE =================== */
+  #screen-truth { background: #0d0d1a; }
+
+  .truth-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(64px, 18vw, 100px);
+    color: white; line-height: 1.05;
+    text-align: left; width: 100%;
+    padding: 0 28px;
+    align-self: flex-start; margin-top: auto;
+  }
+  .truth-dots { font-size: 48px; margin-top: 12px; padding-left: 28px; align-self: flex-start; margin-bottom: auto; display: flex; gap: 10px; }
+  .truth-dot {
+    color: white;
+    opacity: 0;
+    animation: dot-appear 0.4s forwards;
+  }
+
+  /* =================== TELA RESULTADO =================== */
+  #screen-result { justify-content: space-between; padding: 60px 24px 48px; }
+  #screen-result.win { background: var(--green); }
+  #screen-result.lose { background: #1a0a0a; }
+
+  .result-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px; color: white; text-align: center;
+    line-height: 1.05; letter-spacing: 2px;
+  }
+  .result-subtitle { color: rgba(255,255,255,0.7); font-size: 16px; font-weight: 700; text-align: center; margin-top: 6px; }
+
+  .result-impostor-card {
+    background: rgba(0,0,0,0.25); border-radius: 24px;
+    padding: 32px 24px; text-align: center; width: 100%;
+  }
+  .result-impostor-emoji { font-size: 64px; margin-bottom: 12px; }
+  .result-impostor-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px; color: white; letter-spacing: 2px;
+  }
+
+  .result-word-card {
+    background: rgba(0,0,0,0.2); border-radius: 20px;
+    padding: 20px 24px; text-align: center; width: 100%;
+  }
+  .result-word-label { color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+  .result-word { font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: white; letter-spacing: 2px; }
+
+  .btn-play-again {
+    width: 100%; padding: 20px;
+    background: white; color: #1a1a2e;
+    border: none; border-radius: 50px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 18px; font-weight: 900;
+    cursor: pointer; text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    transition: transform 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .btn-play-again:active { transform: scale(0.97); }
+
+  /* CONFETES */
+  .confetti-piece {
+    position: fixed; width: 10px; height: 10px;
+    top: -10px; z-index: 999; pointer-events: none;
+    animation: confetti-fall linear forwards;
+  }
+  @keyframes confetti-fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* SMOKE EFFECT */
+  .smoke-piece {
+    position: fixed; width: 60px; height: 60px;
+    border-radius: 50%; z-index: 999; pointer-events: none;
+    animation: smoke-rise linear forwards;
+    opacity: 0.3;
+  }
+  @keyframes smoke-rise {
+    0% { transform: translateY(0) scale(1); opacity: 0.3; }
+    100% { transform: translateY(-80vh) scale(4); opacity: 0; }
+  }
+
+  /* UTILS */
+  .spacer { flex: 1; }
+  .w-full { width: 100%; }
+  .mt-16 { margin-top: 16px; }
+  .scrollable { overflow-y: auto; width: 100%; flex: 1; }
+</style>
+</head>
+<body>
+
+
+<!-- =================== TELA 1: TÍTULO =================== -->
+<div class="screen" id="screen-title">
+  <div class="title-logo">
+    <div class="emoji-row">🕵️</div>
+    <h1>IMPOSTOR</h1>
+    <p class="tagline">Quem é o infiltrado?</p>
+  </div>
+  <button class="btn-primary" onclick="goTo('screen-players')">JOGAR</button>
+</div>
+
+<!-- =================== TELA 2: JOGADORES =================== -->
+<div class="screen hidden" id="screen-players">
+  <div class="screen-header">
+    <button class="btn-back" onclick="goTo('screen-title')">‹</button>
+    <h2>⚙️ JOGADORES</h2>
+  </div>
+  <div class="players-list scrollable" id="players-list"></div>
+  <button class="btn-add" id="btn-add-player" onclick="addPlayer()">+ Adicionar jogador</button>
+  <button class="btn-primary" id="btn-players-continue" onclick="goTo('screen-categories')" style="opacity:0.4;pointer-events:none">CONTINUAR</button>
+  <p class="min-players-msg">Mínimo 3 jogadores para começar</p>
+</div>
+
+<!-- =================== TELA 3: CATEGORIAS =================== -->
+<div class="screen hidden" id="screen-categories">
+  <div class="screen-header">
+    <button class="btn-back" onclick="goTo('screen-players')">‹</button>
+    <h2>🎯 TEMAS</h2>
+  </div>
+  <div class="categories-list scrollable" id="categories-list"></div>
+  <button class="btn-primary" id="btn-cats-continue" onclick="goTo('screen-time')" style="opacity:0.4;pointer-events:none;margin-top:16px">CONTINUAR</button>
+</div>
+
+<!-- =================== TELA 4: TEMPO =================== -->
+<div class="screen hidden" id="screen-time">
+  <div class="screen-header">
+    <button class="btn-back" onclick="goTo('screen-categories')">‹</button>
+    <h2>⏱️ TEMPO</h2>
+  </div>
+  <div class="spacer"></div>
+  <p class="time-label">Duração da rodada</p>
+  <div class="time-display" id="time-display">1:00</div>
+  <div class="time-controls">
+    <button class="btn-time" onclick="changeTime(-30)">−</button>
+    <button class="btn-time" onclick="changeTime(30)">+</button>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn-primary" onclick="startGame()">INICIAR JOGO</button>
+</div>
+
+<!-- =================== TELAS DE REVELAÇÃO =================== -->
+<div class="screen hidden" id="screen-reveal">
+  <div class="reveal-header">
+    <div class="reveal-round" id="reveal-round">JOGADOR 1 DE 4</div>
+    <div class="reveal-name" id="reveal-name">PLAYER</div>
+    <div class="reveal-instruction">Toque no card para ver sua palavra</div>
+  </div>
+
+  <div class="reveal-card-area">
+    <div class="reveal-card" id="reveal-card" onclick="revealWord()">
+      <div class="hidden-overlay" id="hidden-overlay">
+        <div class="lock-icon">🔒</div>
+        <div class="swipe-arrow">↑</div>
+        <div class="swipe-hint">Toque para revelar</div>
+      </div>
+      <div class="reveal-word-content" id="reveal-word-content">
+        <div class="role-label" id="reveal-role-label">PALAVRA SECRETA</div>
+        <div class="the-word" id="reveal-word">???</div>
+        <div class="word-category" id="reveal-category"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reveal-footer">
+    <div class="next-player-info" id="next-player-info"></div>
+    <button class="btn-next" id="btn-next-player" onclick="nextPlayer()">PRÓXIMO</button>
+  </div>
+</div>
+
+<!-- =================== TELA TIMER =================== -->
+<div class="screen hidden" id="screen-timer">
+  <p class="timer-title">TEMPO RESTANTE</p>
+  <p class="timer-subtitle">Discutam quem é o impostor!</p>
+  <div class="timer-circle" id="timer-circle">
+    <div class="timer-inner">
+      <div class="timer-count" id="timer-count">1:00</div>
+      <div class="timer-sec">segundos</div>
+    </div>
+  </div>
+  <button class="btn-pause" id="btn-pause" onclick="togglePause()">⏸ PAUSAR</button>
+  <button class="btn-primary" style="max-width:320px" onclick="goToVote()">VOTAR AGORA</button>
+</div>
+
+<!-- =================== TELA VOTAÇÃO =================== -->
+<div class="screen hidden" id="screen-vote">
+  <div class="vote-title">QUEM É O IMPOSTOR?</div>
+  <div class="vote-subtitle">Escolha quem vocês acham que é o infiltrado</div>
+  <div class="vote-list scrollable" id="vote-list"></div>
+  <button class="btn-reveal" id="btn-reveal" onclick="goToTruth()">REVELAR</button>
+</div>
+
+<!-- =================== TELA VERDADE =================== -->
+<div class="screen hidden" id="screen-truth">
+  <div class="truth-text">O<br>MOMENTO<br>DA<br>VERDADE</div>
+  <div class="truth-dots" id="truth-dots"></div>
+</div>
+
+<!-- =================== TELA RESULTADO =================== -->
+<div class="screen hidden" id="screen-result">
+  <div style="text-align:center">
+    <div class="result-title" id="result-title">OS JOGADORES<br>VENCERAM!</div>
+    <div class="result-subtitle" id="result-subtitle">O Impostor foi identificado</div>
+  </div>
+  <div class="result-impostor-card">
+    <div class="result-impostor-emoji" id="result-emoji">🎉</div>
+    <div class="result-impostor-name" id="result-impostor-name">Nome</div>
+  </div>
+  <div class="result-word-card">
+    <div class="result-word-label">Palavra Secreta</div>
+    <div class="result-word" id="result-word">Palavra</div>
+  </div>
+  <button class="btn-play-again" onclick="playAgain()">JOGAR NOVAMENTE ↺</button>
+</div>
+
+<script>
+// =================== CONFIG SUPABASE ===================
+const SUPABASE_URL = 'https://lwliemjzprhvyvcwsubc.supabase.co/rest/v1/';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3bGllbWp6cHJodnl2Y3dzdWJjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MzI5MDAsImV4cCI6MjA5NTIwODkwMH0.oX2kv0MZOxiDNE9insIrJFQ2tdH_DzQ62hCUmcDp42o';
+
+const CATEGORIES = [
+  { key: 'Famosos', label: 'Famosos', emoji: '⭐' },
+  { key: 'Filmes & TV', label: 'Filmes & TV', emoji: '🎬' },
+  { key: 'Natureza', label: 'Natureza', emoji: '🌿' },
+  { key: 'Objetos', label: 'Objetos', emoji: '🎒' },
+  { key: 'Lugares & Monumentos', label: 'Lugares & Monumentos', emoji: '🗺️' },
+  { key: 'Comidas', label: 'Comidas', emoji: '🍕' },
+  { key: 'Hobbies & Festas', label: 'Hobbies & Festas', emoji: '🎉' },
+];
+
+
+// =================== SOM ===================
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  return audioCtx;
+}
+
+function playTone(freq, type, duration, volume, startTime, fadeOut) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, startTime);
+  gain.gain.setValueAtTime(volume, startTime);
+  if (fadeOut) gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+  osc.start(startTime);
+  osc.stop(startTime + duration);
+}
+
+// Tick dos pontos (tom crescente a cada ponto)
+function soundDotTick(index) {
+  const ctx = getAudioCtx();
+  const freqs = [220, 277, 330, 392, 494, 587];
+  const freq = freqs[index] || 440;
+  playTone(freq, 'sine', 0.18, 0.3, ctx.currentTime, true);
+}
+
+// Revelar palavra — whoosh + nota
+function soundReveal() {
+  const ctx = getAudioCtx();
+  const t = ctx.currentTime;
+  // Whoosh
+  const bufSize = ctx.sampleRate * 0.3;
+  const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.setValueAtTime(800, t);
+  filter.frequency.exponentialRampToValueAtTime(200, t + 0.3);
+  const gainNode = ctx.createGain();
+  gainNode.gain.setValueAtTime(0.15, t);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+  src.connect(filter);
+  filter.connect(gainNode);
+  gainNode.connect(ctx.destination);
+  src.start(t);
+  // Nota
+  playTone(523, 'sine', 0.25, 0.2, t + 0.05, true);
+}
+
+// Timer bip (últimos 10s)
+function soundTimerBeep(urgent) {
+  const ctx = getAudioCtx();
+  const freq = urgent ? 880 : 660;
+  playTone(freq, 'square', 0.08, urgent ? 0.15 : 0.08, ctx.currentTime, true);
+}
+
+// Vitória — fanfarra ascendente
+function soundWin() {
+  const ctx = getAudioCtx();
+  const t = ctx.currentTime;
+  const notes = [523, 659, 784, 1047];
+  notes.forEach((freq, i) => {
+    playTone(freq, 'triangle', 0.3, 0.25, t + i * 0.15, true);
+  });
+  setTimeout(() => {
+    const t2 = getAudioCtx().currentTime;
+    playTone(1047, 'triangle', 0.6, 0.3, t2, true);
+  }, 700);
+}
+
+// Derrota — som sombrio descendente
+function soundLose() {
+  const ctx = getAudioCtx();
+  const t = ctx.currentTime;
+  const notes = [392, 330, 277, 196];
+  notes.forEach((freq, i) => {
+    playTone(freq, 'sawtooth', 0.35, 0.2, t + i * 0.2, true);
+  });
+}
+
+// Clique votação
+function soundVote() {
+  const ctx = getAudioCtx();
+  playTone(440, 'sine', 0.1, 0.15, ctx.currentTime, true);
+}
+
+// =================== ESTADO ===================
+let players = [];
+let selectedCategories = [];
+let roundTime = 60;
+let allWords = [];
+let secretWord = '';
+let secretCategory = '';
+let impostorIndex = -1;
+let revealPlayers = [];       // lista de jogadores desta rodada
+let currentRevealIndex = 0;
+let timerInterval = null;
+let truthTimeout = null;      // controla o setTimeout da tela verdade
+let gameId = 0;               // incrementado a cada jogo, invalida timeouts de rodadas anteriores
+let timeLeft = 60;
+let isPaused = false;
+let votedPlayer = null;
+
+// =================== NAVEGAÇÃO ===================
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(screenId).classList.remove('hidden');
+}
+
+// =================== TELA 2: JOGADORES ===================
+function initPlayers() {
+  players = ['', '', ''];
+  renderPlayers();
+}
+
+function renderPlayers() {
+  const list = document.getElementById('players-list');
+  list.innerHTML = '';
+  players.forEach((name, i) => {
+    const row = document.createElement('div');
+    row.className = 'player-input-row';
+    row.innerHTML = `
+      <div class="player-num">${i + 1}</div>
+      <input type="text" placeholder="Nome do jogador..." value="${name}"
+        oninput="players[${i}]=this.value;checkPlayersContinue()"
+        maxlength="20">
+      ${i >= 3 ? `<button class="btn-remove" onclick="removePlayer(${i})">✕</button>` : ''}
+    `;
+    list.appendChild(row);
+  });
+  document.getElementById('btn-add-player').style.display = players.length >= 20 ? 'none' : 'flex';
+  checkPlayersContinue();
+}
+
+function addPlayer() {
+  if (players.length < 20) { players.push(''); renderPlayers(); }
+}
+
+function removePlayer(i) {
+  players.splice(i, 1); renderPlayers();
+}
+
+function checkPlayersContinue() {
+  const valid = players.filter(p => p.trim()).length >= 3;
+  const btn = document.getElementById('btn-players-continue');
+  btn.style.opacity = valid ? '1' : '0.4';
+  btn.style.pointerEvents = valid ? 'all' : 'none';
+}
+
+// =================== TELA 3: CATEGORIAS ===================
+function initCategories() {
+  selectedCategories = [];
+  const list = document.getElementById('categories-list');
+  list.innerHTML = '';
+
+  const allCard = document.createElement('div');
+  allCard.className = 'category-card';
+  allCard.id = 'cat-all';
+  allCard.innerHTML = `
+    <div class="category-emoji">🌐</div>
+    <div class="category-info">
+      <div class="category-name">TODOS OS TEMAS</div>
+      <div class="category-count">Todas as categorias</div>
+    </div>
+    <div class="category-check" id="check-all"></div>
+  `;
+  allCard.onclick = () => toggleAll();
+  list.appendChild(allCard);
+
+  CATEGORIES.forEach(cat => {
+    const card = document.createElement('div');
+    card.className = 'category-card';
+    card.id = `cat-${cat.key}`;
+    card.innerHTML = `
+      <div class="category-emoji">${cat.emoji}</div>
+      <div class="category-info"><div class="category-name">${cat.label}</div></div>
+      <div class="category-check" id="check-${cat.key}"></div>
+    `;
+    card.onclick = () => toggleCategory(cat.key);
+    list.appendChild(card);
+  });
+
+  checkCatsContinue();
+}
+
+function toggleAll() {
+  selectedCategories = selectedCategories.length === CATEGORIES.length ? [] : CATEGORIES.map(c => c.key);
+  renderCategorySelections();
+}
+
+function toggleCategory(key) {
+  const idx = selectedCategories.indexOf(key);
+  if (idx > -1) selectedCategories.splice(idx, 1);
+  else selectedCategories.push(key);
+  renderCategorySelections();
+}
+
+function renderCategorySelections() {
+  CATEGORIES.forEach(cat => {
+    const sel = selectedCategories.includes(cat.key);
+    document.getElementById(`cat-${cat.key}`).classList.toggle('selected', sel);
+    document.getElementById(`check-${cat.key}`).textContent = sel ? '✓' : '';
+  });
+  const allSel = selectedCategories.length === CATEGORIES.length;
+  document.getElementById('cat-all').classList.toggle('selected', allSel);
+  document.getElementById('check-all').textContent = allSel ? '✓' : '';
+  checkCatsContinue();
+}
+
+function checkCatsContinue() {
+  const btn = document.getElementById('btn-cats-continue');
+  btn.style.opacity = selectedCategories.length > 0 ? '1' : '0.4';
+  btn.style.pointerEvents = selectedCategories.length > 0 ? 'all' : 'none';
+}
+
+// =================== TELA 4: TEMPO ===================
+function changeTime(delta) {
+  roundTime = Math.max(30, Math.min(300, roundTime + delta));
+  const min = Math.floor(roundTime / 60);
+  const sec = roundTime % 60;
+  document.getElementById('time-display').textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+}
+
+// =================== BUSCA DE PALAVRAS ===================
+async function fetchWords() {
+  // Monta os parâmetros corretamente com encoding
+  const params = new URLSearchParams();
+  params.append('select', 'palavra,categoria');
+  params.append('categoria', 'in.(' + selectedCategories.join(',') + ')');
+  params.append('limit', '2000');
+  const url = SUPABASE_URL + 'impostor?' + params.toString();
+  console.log('Fetching:', url);
+  try {
+    const res = await fetch(url, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const data = await res.json();
+    console.log('Resposta:', data);
+    allWords = Array.isArray(data) ? data : [];
+    console.log('Total:', allWords.length);
+  } catch(e) {
+    console.error('Erro:', e);
+    allWords = [];
+  }
+}
+
+function pickRandomWord() {
+  if (!allWords.length) return { palavra: '???', categoria: '' };
+  return allWords[Math.floor(Math.random() * allWords.length)];
+}
+
+// =================== INICIAR JOGO ===================
+async function startGame() {
+  // Para qualquer timer/timeout pendente
+  clearInterval(timerInterval);
+  clearTimeout(truthTimeout);
+  timerInterval = null;
+  truthTimeout = null;
+  gameId++; // nova partida
+
+  await fetchWords();
+  const picked = pickRandomWord();
+  secretWord = picked.palavra;
+  secretCategory = picked.categoria;
+
+  // Monta lista de jogadores desta rodada
+  revealPlayers = players.filter(p => p.trim());
+  impostorIndex = Math.floor(Math.random() * revealPlayers.length);
+  currentRevealIndex = 0;
+
+  goTo('screen-reveal');
+  renderReveal();
+}
+
+// =================== REVELAÇÃO ===================
+// flag para saber se palavra foi revelada
+let wordRevealed = false;
+
+function renderReveal() {
+  const total = revealPlayers.length;
+  const name = revealPlayers[currentRevealIndex];
+  const isImpostor = currentRevealIndex === impostorIndex;
+  const isLast = currentRevealIndex === total - 1;
+
+  wordRevealed = false;
+
+  // Cabeçalho
+  document.getElementById('reveal-round').textContent = 'JOGADOR ' + (currentRevealIndex + 1) + ' DE ' + total;
+  document.getElementById('reveal-name').textContent = name.toUpperCase();
+
+  // Conteúdo da palavra
+  if (isImpostor) {
+    document.getElementById('reveal-role-label').textContent = 'VOCÊ É O';
+    document.getElementById('reveal-word').textContent = 'IMPOSTOR';
+    document.getElementById('reveal-word').className = 'the-word impostor';
+    document.getElementById('reveal-category').textContent = '';
+  } else {
+    document.getElementById('reveal-role-label').textContent = 'PALAVRA SECRETA';
+    document.getElementById('reveal-word').textContent = secretWord;
+    document.getElementById('reveal-word').className = 'the-word';
+    document.getElementById('reveal-category').textContent = secretCategory;
+  }
+
+  // Mostra overlay (esconde a palavra)
+  const overlay = document.getElementById('hidden-overlay');
+  overlay.classList.remove('gone');
+
+  // Botão DESABILITADO
+  const btn = document.getElementById('btn-next-player');
+  btn.disabled = true;
+  btn.textContent = isLast ? 'COMEÇAR O JOGO ▶' : 'PRÓXIMO JOGADOR';
+
+  // Info próximo jogador
+  document.getElementById('next-player-info').innerHTML = isLast ? '' : 'Próximo: <span>' + revealPlayers[currentRevealIndex + 1] + '</span>';
+}
+
+function revealWord() {
+  if (wordRevealed) return;
+  wordRevealed = true;
+  soundReveal();
+  // Esconde overlay
+  document.getElementById('hidden-overlay').classList.add('gone');
+  // Habilita botão
+  document.getElementById('btn-next-player').disabled = false;
+}
+
+function nextPlayer() {
+  if (!wordRevealed) return; // segurança extra
+  currentRevealIndex++;
+  if (currentRevealIndex >= revealPlayers.length) {
+    startTimer();
+    return;
+  }
+  renderReveal();
+}
+
+// =================== TIMER ===================
+function startTimer() {
+  timeLeft = roundTime;
+  isPaused = false;
+  document.getElementById('btn-pause').textContent = '⏸ PAUSAR';
+  goTo('screen-timer');
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    if (!isPaused) {
+      timeLeft--;
+      updateTimerDisplay();
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        goToVote();
+      }
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const min = Math.floor(timeLeft / 60);
+  const sec = timeLeft % 60;
+  document.getElementById('timer-count').textContent = `${min}:${sec.toString().padStart(2,'0')}`;
+  const deg = ((roundTime - timeLeft) / roundTime) * 360;
+  document.getElementById('timer-circle').style.background =
+    `conic-gradient(var(--red) ${deg}deg, rgba(255,255,255,0.08) ${deg}deg)`;
+  if (timeLeft <= 10 && timeLeft > 0) soundTimerBeep(timeLeft <= 4);
+}
+
+function togglePause() {
+  isPaused = !isPaused;
+  document.getElementById('btn-pause').textContent = isPaused ? '▶ CONTINUAR' : '⏸ PAUSAR';
+}
+
+// =================== VOTAÇÃO ===================
+function goToVote() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  votedPlayer = null;
+
+  const list = document.getElementById('vote-list');
+  list.innerHTML = '';
+  revealPlayers.forEach((name, i) => {
+    const card = document.createElement('div');
+    card.className = 'vote-card';
+    card.id = `vote-${i}`;
+    card.innerHTML = `
+      <div class="vote-player-name">${name}</div>
+      <div class="vote-radio"><div class="vote-radio-dot"></div></div>
+    `;
+    card.onclick = () => selectVote(i);
+    list.appendChild(card);
+  });
+
+  const btn = document.getElementById('btn-reveal');
+  btn.classList.remove('active');
+  btn.style.opacity = '0.4';
+  btn.style.pointerEvents = 'none';
+  goTo('screen-vote');
+}
+
+function selectVote(i) {
+  document.querySelectorAll('.vote-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById(`vote-${i}`).classList.add('selected');
+  votedPlayer = i;
+  soundVote();
+  const btn = document.getElementById('btn-reveal');
+  btn.classList.add('active');
+  btn.style.opacity = '1';
+  btn.style.pointerEvents = 'all';
+}
+
+// =================== VERDADE & RESULTADO ===================
+function goToTruth() {
+  goTo('screen-truth');
+
+  // Anima os pontos um a um
+  const dotsEl = document.getElementById('truth-dots');
+  dotsEl.innerHTML = '';
+  const totalDots = 6;
+  const dotDelay = 380; // ms entre cada ponto
+  for (let i = 0; i < totalDots; i++) {
+    setTimeout(() => {
+      const dot = document.createElement('span');
+      dot.className = 'truth-dot';
+      dot.textContent = '•';
+      dot.style.animationDelay = '0s';
+      dotsEl.appendChild(dot);
+      soundDotTick(i);
+    }, i * dotDelay);
+  }
+
+  const currentGameId = gameId;
+  truthTimeout = setTimeout(() => {
+    if (gameId === currentGameId) showResult();
+  }, 3000);
+}
+
+function showResult() {
+  truthTimeout = null;
+  const isCorrect = votedPlayer === impostorIndex;
+  const result = document.getElementById('screen-result');
+  result.classList.remove('win', 'lose');
+
+  if (isCorrect) {
+    result.classList.add('win');
+    document.getElementById('result-title').innerHTML = 'OS JOGADORES<br>VENCERAM!';
+    document.getElementById('result-subtitle').textContent = 'O Impostor foi identificado';
+    document.getElementById('result-emoji').textContent = '🎉';
+    launchConfetti();
+    soundWin();
+  } else {
+    result.classList.add('lose');
+    document.getElementById('result-title').innerHTML = 'O IMPOSTOR<br>VENCEU!';
+    document.getElementById('result-subtitle').textContent = 'O infiltrado enganou a todos!';
+    document.getElementById('result-emoji').textContent = '😈';
+    launchSmoke();
+    soundLose();
+  }
+
+  document.getElementById('result-impostor-name').textContent = revealPlayers[impostorIndex].toUpperCase();
+  document.getElementById('result-word').textContent = secretWord;
+  goTo('screen-result');
+}
+
+// =================== EFEITOS ===================
+function launchConfetti() {
+  const colors = ['#FFD60A','#FF4D6D','#2DC653','#4CC9F0','#FF9F1C','#ffffff'];
+  for (let i = 0; i < 80; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.background = colors[Math.floor(Math.random() * colors.length)];
+      el.style.width = (Math.random() * 10 + 6) + 'px';
+      el.style.height = (Math.random() * 10 + 6) + 'px';
+      el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      el.style.animationDuration = (Math.random() * 2 + 2) + 's';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }, i * 30);
+  }
+}
+
+function launchSmoke() {
+  const colors = ['#333','#222','#111','#440000','#220000'];
+  for (let i = 0; i < 20; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'smoke-piece';
+      el.style.left = (20 + Math.random() * 60) + 'vw';
+      el.style.bottom = '-60px';
+      el.style.background = colors[Math.floor(Math.random() * colors.length)];
+      el.style.animationDuration = (Math.random() * 3 + 3) + 's';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 6000);
+    }, i * 150);
+  }
+}
+
+// =================== JOGAR NOVAMENTE ===================
+function playAgain() {
+  // Cancela tudo que possa estar rodando
+  clearInterval(timerInterval);
+  clearTimeout(truthTimeout);
+  timerInterval = null;
+  truthTimeout = null;
+  gameId++; // nova partida
+
+  // Incrementa gameId para invalidar qualquer timeout pendente
+  gameId++;
+
+  // Reset de estado
+  allWords = [];
+  secretWord = '';
+  secretCategory = '';
+  impostorIndex = -1;
+  revealPlayers = [];
+  currentRevealIndex = 0;
+  votedPlayer = null;
+  isPaused = false;
+
+  initCategories();
+  goTo('screen-categories');
+}
+
+// =================== INIT ===================
+initPlayers();
+initCategories();
+</script>
+</body>
+</html>
