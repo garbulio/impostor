@@ -1023,8 +1023,6 @@ function goToVote() {
 
   const btn = document.getElementById('btn-reveal');
   btn.classList.remove('active');
-  btn.style.opacity = '0.4';
-  btn.style.pointerEvents = 'none';
   goTo('screen-vote');
 }
 
@@ -1035,8 +1033,6 @@ function selectVote(i) {
   soundVote();
   const btn = document.getElementById('btn-reveal');
   btn.classList.add('active');
-  btn.style.opacity = '1';
-  btn.style.pointerEvents = 'all';
 }
 
 // =================== VERDADE & RESULTADO ===================
@@ -1148,6 +1144,7 @@ function playAgain() {
   currentRevealIndex = 0;
   votedPlayer = null;
   isPaused = false;
+  document.getElementById('btn-reveal').classList.remove('active');
 
   initCategories();
   goTo('screen-categories');
